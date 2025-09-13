@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Select Level</title>
+  <link rel="stylesheet" href="/static/landing.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    a { text-decoration: none; }
+
+    .button {
+      background-color: rgb(60, 133, 104);
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgb(58, 210, 144), 0 0 20px rgb(37, 235, 189);
+      text-align: center;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .button:hover {
+      background-color: rgb(41, 206, 165);
+      box-shadow: 0 0 20px rgb(58, 210, 144), 0 0 40px rgb(37, 235, 189);
+    }
+
+    .top-buttons {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+    }
+  </style>
+</head>
+
+<body class="bg-maze">
+  <div>
+    <h2 class="glow-text">Select a Level</h2>
+    <div id="levels"></div>
+  </div>
+
+  <!-- Logout + Leaderboard buttons -->
+  <div class="top-buttons">
+    <a href="/leaderboard" class="button">🏆 Leaderboard</a>
+    <a href="login" class="button">Logout</a>
+  </div>
+
+  <script>
+    const levelNames = ["Easy", "Medium", "Hard", "Extreme"];
+
+    async function loadLevels() {
+      const res = await fetch('/get_unlocked_levels');
+      const data = await res.json();
+
+      const container = document.getElementById("levels");
+
+      for (let i = 0; i < levelNames.length; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = levelNames[i];
+
+        if (i + 1 <= data.unlocked_levels) {
+          btn.onclick = () => {
+            window.location.href = `/select_level/${i + 1}`;
+          };
+        } else {
+          btn.disabled = true;
+          btn.innerText += " 🔒";
+        }
+
+        btn.classList.add("btn-glow", `level-${levelNames[i].toLowerCase()}`);
+        container.appendChild(btn);
+      }
+    }
+
+    loadLevels();
+
+    // Instructions Modal Functionality
+    const instructionsModal = document.getElementById("instructionsModal");
+    const instructionsBtn = document.getElementById("instructionsBtn");
+    const closeInstructions = document.querySelector(".close");
+
+    if (instructionsBtn) {
+      instructionsBtn.addEventListener('click', function () {
+        instructionsModal.style.display = "block";
+      });
+    }
+
+    if (closeInstructions) {
+      closeInstructions.addEventListener('click', function () {
+        instructionsModal.style.display = "none";
+      });
+    }
+
+    window.addEventListener('click', function (event) {
+      if (event.target == instructionsModal) {
+        instructionsModal.style.display = "none";
+      }
+    });
+  </script>
+</body>
+
+</html>

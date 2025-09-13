@@ -1,0 +1,372 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+/* Font Family */
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.bg-maze {
+  background-image: url('https://media.istockphoto.com/id/1301927025/photo/dark-maze-top-view-elegant-geometric-pattern-background-business-concept-of-find-right-way-3d.jpg?s=612x612&w=0&k=20&c=I7AAZx1QZTPXIE_JmJM0H8BEVp7rts9BG4iVcbuDycw=');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+/* Glow Text Effect */
+.glow-text {
+  text-shadow: 0 0 10px rgb(59, 216, 135), 0 0 20px #3b82f6;
+}
+
+/* Glass Effect (if needed) */
+.glass {
+  background: rgba(5, 18, 15, 0.5);
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button Glow Effect */
+.btn-glow {
+  background-color: rgb(60, 133, 104);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgb(58, 210, 144), 0 0 20px rgb(37, 235, 189);
+  text-align: center;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.btn-glow:hover {
+  background-color: rgb(41, 206, 165);
+  box-shadow: 0 0 20px rgb(58, 210, 144), 0 0 40px rgb(37, 235, 189);
+}
+
+/* Heading Styling */
+h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: white;
+  text-shadow: 0 0 8px #00ffaa, 0 0 16px #00ffaa;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+/* Level Buttons Container */
+#levels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 900px;
+  width: 100%;
+  padding: 1rem;
+}
+
+
+
+/* Glass Effect */
+.glass {
+  background: rgba(5, 18, 15, 0.6);
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  box-shadow: 0 0 30px rgba(0, 255, 170, 0.1);
+}
+
+
+/* Glowing Button */
+.btn-glow {
+  background-color: rgb(60, 133, 104);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgb(58, 210, 144), 0 0 20px rgb(37, 235, 189);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-glow:hover {
+  background-color: rgb(41, 206, 165);
+  box-shadow: 0 0 20px rgb(58, 210, 144), 0 0 40px rgb(37, 235, 189);
+}
+
+/* Locked Button */
+button[disabled] {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  border: 2px dashed #555;
+  cursor: not-allowed;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  h2 {
+    font-size: 1.8rem;
+  }
+
+  .btn-glow {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+  }
+
+  #levels {
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+}
+.level-easy {
+  background-color: #4caf50;
+}
+
+.level-medium {
+  background-color: #fbc02d;
+}
+
+.level-hard {
+  background-color: #f57c00;
+}
+
+.level-extreme {
+  background-color: #d32f2f;
+}
+
+.level-easy:hover {
+  background-color: #66bb6a;
+}
+
+.level-medium:hover {
+  background-color: #fdd835;
+}
+
+.level-hard:hover {
+  background-color: #ff9800;
+}
+
+.level-extreme:hover {
+  background-color: #e53935;
+}
+/* Instructions Button */
+.instructions-btn {
+  position: fixed;
+  top: 20px;
+  right: 80px;
+  background-color: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 99;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+  text-shadow: 0 0 5px #00ffff;
+  transition: all 0.3s ease;
+  text-align: center;
+  line-height: 46px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.instructions-btn:hover {
+  background-color: rgba(0, 255, 255, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.9);
+}
+
+/* Game Title */
+.game-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Instructions Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 5, 15, 0.95);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: linear-gradient(135deg, rgba(10, 15, 30, 0.95), rgba(5, 10, 25, 0.98));
+  margin: 5% auto;
+  padding: 30px;
+  border: 2px solid #00ffff;
+  width: 80%;
+  max-width: 700px;
+  color: #e0f8ff;
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.6), 
+              inset 0 0 20px rgba(0, 150, 255, 0.3);
+  position: relative;
+  overflow-y: auto;
+  max-height: 80vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-content h2 {
+  text-align: center;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+  margin-bottom: 25px;
+  font-size: 24px;
+  border-bottom: 1px solid #00ffff;
+  padding-bottom: 15px;
+  letter-spacing: 1px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.close {
+  color: #00ffff;
+  float: right;
+  font-size: 32px;
+  font-weight: bold;
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  cursor: pointer;
+  text-shadow: 0 0 5px #00ffff;
+  transition: all 0.2s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.close:hover {
+  color: #ff00ff;
+  text-shadow: 0 0 5px #ff00ff;
+  transform: scale(1.2);
+}
+
+.instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.instruction-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 18px;
+  background: rgba(0, 30, 60, 0.4);
+  border-radius: 10px;
+  border-left: 3px solid #00ffff;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 150, 255, 0.2);
+}
+
+.instruction-item:hover {
+  background: rgba(0, 40, 80, 0.5);
+  transform: translateX(5px);
+  box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
+}
+
+.instruction-item .icon {
+  font-size: 30px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 3px #00ffff);
+  width: 40px;
+  text-align: center;
+}
+
+.instruction-item .text h3 {
+  margin: 0 0 8px 0;
+  color: #00ffff;
+  text-shadow: 0 0 5px #00ffff;
+  font-size: 20px;
+  letter-spacing: 1px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.instruction-item .text p {
+  margin: 0;
+  line-height: 1.5;
+  color: #c0e8ff;
+  font-size: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.highlight {
+  color: #00ffff;
+  text-shadow: 0 0 5px #00ffff;
+  font-weight: bold;
+  background: rgba(0, 100, 200, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.footer-note {
+  text-align: center;
+  margin-top: 25px;
+  font-style: italic;
+  color: #80e0ff;
+  text-shadow: 0 0 3px #00ffff;
+  border-top: 1px solid #00ffff;
+  padding-top: 15px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .modal-content {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .instruction-item {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .game-title {
+    font-size: 26px;
+  }
+  
+  .modal-content h2 {
+    font-size: 20px;
+  }
+  
+  .instructions-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 12px;
+    line-height: 41px;
+    right: 20px;
+  }
+}
