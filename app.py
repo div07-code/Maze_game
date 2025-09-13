@@ -211,6 +211,49 @@ def validate_answer():
 
     return jsonify({'correct': answer == correct})
 
+@app.route('/submit_score', methods=['POST'])
+def submit_score():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+    
+    data = request.json
+    score = data.get('score', 0)
+    level = session.get('current_level', 1)
+    user_id = session['user_id']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO scores (user_id, level, score) VALUES (%s, %s, %s)",
+        (user_id, level, score)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({'message': 'Score submitted successfully'})
+
+
+@app.route('/leaderboard')
+def leaderboard():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Join scores with users to get usernames
+    cursor.execute("""
+        SELECT u.username, s.score
+        FROM scores s
+        JOIN users u ON s.user_id = u.id
+        ORDER BY s.score DESC
+        LIMIT 10
+    """)
+    
+    leaderboard_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return render_template('leaderboard.html', leaderboard=leaderboard_data)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

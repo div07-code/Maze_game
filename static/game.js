@@ -203,25 +203,23 @@ function drawEndPoint() {
 }
 
 function checkWin() {
-  if (!gameWon && player.x === cols - 1 && player.y === rows - 1) {
-    gameWon = true;
-    clearInterval(countdown);
+    if (!gameWon && player.x === cols - 1 && player.y === rows - 1) {
+        gameWon = true;
+        clearInterval(countdown);
 
-    fetch('/next_level', {
-      method: 'POST',
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message || "You Win!");
-        window.location.href = `/level_select`;  // This restarts the game with the new level
-      })
-      .catch(err => {
-        console.error("Failed to progress to next level:", err);
-        alert("You win! But could not progress to next level.");
-        window.location.href = `/index`;
+        const score = timeLeft * 10; // Example: 10 points per second left
 
-      });
-  }
+        fetch('/submit_score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(`You escaped! Score: ${score}`);
+            window.location.href = `/level_select`;
+        });
+    }
 }
 
 
@@ -411,3 +409,28 @@ if (player.x === exitCell.x && player.y === exitCell.y) {
       }
     });
 }
+function updateScore(timeLeft, wallsBroken) {
+  let score = (timeLeft * 10) - (wallsBroken * 5);
+  if (score < 0) score = 0;
+
+  fetch('/update_score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ score: score })
+  })
+  .then(res => res.json())
+  .then(data => console.log("✅ Score updated:", data))
+  .catch(err => console.error("❌ Error updating score:", err));
+} 
+
+if (!gameWon) {
+  gameWon = true;
+  document.getElementById("winMessage").style.display = "block";
+
+  // ✅ Save score for this level
+  updateScore(timeLeft, wallsBroken);
+
+  // Show Next Level button
+  document.getElementById("nextLevelBtn").style.display = "inline-block";
+}
+
