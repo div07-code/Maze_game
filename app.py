@@ -21,13 +21,18 @@ levels = {
 
 # MySQL Configuration
 config = {
-    'host': 'localhost',
-    'database': 'maze_game',
-    'user': 'root',
-    'password': 'root'
+    "host": "localhost",
+    "user": "root",
+    "password": "root",
+    "database": "maze_game",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_unicode_ci",
+    "use_unicode": True
 }
 
+
 def get_db_connection():
+    print("CONFIG TYPE:", type(config), config)
     return mysql.connector.connect(**config)
 
 @app.route('/')
@@ -131,18 +136,13 @@ def next_level():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # Update max_level_unlocked in DB
         cursor.execute("UPDATE users SET max_level_unlocked = GREATEST(max_level_unlocked, %s) WHERE id = %s",
                        (session['current_level'], user_id))
-
         conn.commit()
         cursor.close()
         conn.close()
 
         return jsonify({'level': session['current_level'], 'message': 'Level up!'})
-
-    return jsonify({'message': 'You have completed all levels!'})
 
 @app.route('/reset_game')
 def reset_game():
@@ -183,7 +183,7 @@ def select_level(level):
     conn.close()
 
     if level <= max_unlocked:
-        # ✅ Always reset timer by resetting session current_level
+        # Always reset timer by resetting session current_level
         session['current_level'] = level
         return redirect(url_for('index'))
     else:
@@ -215,45 +215,132 @@ def validate_answer():
 def submit_score():
     if 'user_id' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-    
-    data = request.json
-    score = data.get('score', 0)
+
+    data = request.json or {}
+    score = int(data.get('score', 0))
+    walls_broken = int(data.get('walls_broken', 0))
+    time_left = int(data.get('time_left', 0))
     level = session.get('current_level', 1)
     user_id = session['user_id']
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO scores (user_id, level, score) VALUES (%s, %s, %s)",
-        (user_id, level, score)
-    )
-    conn.commit()
-    cursor.close()
-    conn.close()
 
-    return jsonify({'message': 'Score submitted successfully'})
+    try:
+        # 1) Insert attempt (history)
+        cursor.execute("""
+            INSERT INTO attempts (user_id, level, score, walls_broken, time_left)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (user_id, level, score, walls_broken, time_left))
 
+        # 2) Upsert into scores (store player's best total or best per-level - adjust as needed)
+        # Example: keep best score per user across all levels in 'scores' table
+        cursor.execute("""
+            INSERT INTO scores (user_id, level, score)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE score = GREATEST(score, VALUES(score))
+        """, (user_id, level, score))
 
-@app.route('/leaderboard')
-def leaderboard():
+        # 3) Check & award achievements
+        # Award FIRST_WIN if this is the user's first win (count attempts)
+        cursor.execute("SELECT COUNT(*) FROM attempts WHERE user_id = %s", (user_id,))
+        attempts_count = cursor.fetchone()[0]
+
+        # helper: award achievement by code
+        def award(code):
+            cursor.execute("SELECT id FROM achievements WHERE code = %s", (code,))
+            row = cursor.fetchone()
+            if not row:
+                return
+            ach_id = row[0]
+            try:
+                cursor.execute("""
+                    INSERT INTO user_achievements (user_id, achievement_id)
+                    VALUES (%s, %s)
+                """, (user_id, ach_id))
+            except Exception:
+                # ignore unique constraint or other issues
+                pass
+
+        # FIRST_WIN
+        if attempts_count == 1:
+            award('FIRST_WIN')
+
+        # NO_WALL_BREAK: this attempt had zero walls broken
+        if walls_broken == 0:
+            award('NO_WALL_BREAK')
+
+        # FAST_FINISH: >= 30s left
+        if time_left >= 30:
+            award('FAST_FINISH')
+
+        # WALL_BREAKER: count total walls broken across attempts; award when >=10
+        cursor.execute("SELECT COALESCE(SUM(walls_broken),0) FROM attempts WHERE user_id = %s", (user_id,))
+        total_wb = cursor.fetchone()[0]
+        if total_wb >= 10:
+            award('WALL_BREAKER')
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print("🔥 submit_score ERROR:", e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify({'message': 'Score submitted and recorded', 'score': score})
+
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    # Join scores with users to get usernames
+
+    # Get user info
+    cursor.execute("SELECT id, username FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+
+    # Get user's achievements (join)
     cursor.execute("""
-        SELECT u.username, s.score
-        FROM scores s
-        JOIN users u ON s.user_id = u.id
-        ORDER BY s.score DESC
-        LIMIT 10
-    """)
-    
-    leaderboard_data = cursor.fetchall()
+        SELECT a.code, a.title, a.description, ua.awarded_at
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = %s
+        ORDER BY ua.awarded_at DESC
+    """, (user_id,))
+    user_achievements = cursor.fetchall()
+
+    # Get all defined achievements (to show locked ones)
+    cursor.execute("SELECT code, title, description FROM achievements ORDER BY id")
+    all_achievements = cursor.fetchall()
+
+    # Get user's attempts (history)
+    cursor.execute("""
+        SELECT level, score, walls_broken, time_left, created_at
+        FROM attempts
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 100
+    """, (user_id,))
+    attempts = cursor.fetchall()
+
+    # Optional: aggregate stats
+    cursor.execute("SELECT SUM(score) as total_score, COUNT(*) as attempts_count FROM attempts WHERE user_id = %s", (user_id,))
+    stats = cursor.fetchone()
+
     cursor.close()
     conn.close()
-    
-    return render_template('leaderboard.html', leaderboard=leaderboard_data)
 
+    return render_template('profile.html',
+                           user=user,
+                           user_achievements=user_achievements,
+                           all_achievements=all_achievements,
+                           attempts=attempts,
+                           stats=stats)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+        app.run(debug=True, use_reloader=False)
